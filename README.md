@@ -1,5 +1,5 @@
 # Targeted Feature Extraction
-# GUI for the OpenMS FeatureFinderMetaboIdent
+## GUI for the OpenMS FeatureFinderMetaboIdent
 
 This is a simple GUI tool for targeted feature extraction with the OpenMS tool FeatureFinderMetaboIdent.
 
