@@ -10,12 +10,14 @@ def ffmid(mzML, featureXML, library, n_isotopes = 2, mz_window = 10, peak_width 
             "-detect:peak_width",str(peak_width)]
     subprocess.call(args)
 
-def feature_to_json(feature_path, json_dir):
+def feature_to_json(feature_path, json_dir, ffmid_params):
     feature_map = FeatureMap()
     FeatureXMLFile().load(feature_path, feature_map)
 
-    out = {'auc': {},
-            'feature': {}}
+    out = {'file': {'name':os.path.basename(feature_path[:-11])},
+           'params': ffmid_params,
+           'auc': {},
+           'feature': {}}
     for feature in feature_map:
         f_id = feature.getMetaValue('PeptideRef')
         f_name = feature.getMetaValue("label")
@@ -33,10 +35,8 @@ def feature_to_json(feature_path, json_dir):
     with open(os.path.join(json_dir, os.path.basename(feature_path[:-10])+'json'), "w") as f:
         json.dump(out, f, indent = 4)
 
-def view_features(json_dir = ''):
-    for file in os.listdir(json_dir):
-        with open(os.path.join(json_dir, file), 'r') as f:
-            data = json.load(f)
+def view_features(json_objects = []):
+    for data in json_objects:
         fig = plt.figure()
         ax = fig.add_subplot(111)
         for f_id, feature in data['feature'].items():
@@ -45,5 +45,19 @@ def view_features(json_dir = ''):
                 plt.plot(iso['rt'], iso['i'], color = color)
                 if i == '1':
                     plt.text(iso['rt'][0], max(iso['i']), feature['name'], color = color)
-        plt.title(file[:-5])
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0), useMathText=True)
+        ax.set_ylabel('intensity (cps)')
+        ax.set_xlabel('time (s)')
+        plt.title(data['file']['name'])
         plt.show()
+    
+def get_json_objects(project_dir):
+        if project_dir == '':
+            print('Select project directory!')
+            return
+        json_dir = os.path.join(project_dir, 'data')
+        json_objects = []
+        for file in os.listdir(json_dir):
+            with open(os.path.join(json_dir, file),'r') as f:
+                json_objects.append(json.load(f))
+        return json_objects

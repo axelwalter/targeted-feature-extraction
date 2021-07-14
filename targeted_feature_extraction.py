@@ -1,5 +1,5 @@
-from src.ui.MainWindow import main
-from src.extraction import ffmid, feature_to_json, visualize
+from src.ui.MainWindow import MainWindow
 
 if __name__ == '__main__':
-    main()
+    app = MainWindow()
+    app.mainloop()
