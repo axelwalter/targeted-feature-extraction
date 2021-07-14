@@ -31,12 +31,17 @@ def extract_features():
         os.mkdir(os.path.join(project_dir, 'data'))
     for mzml_path in mzml_files:
         feature_path = mzml_path[:-4]+'featureXML'
+
         ffmid(mzml_path,
               feature_path,
               targetLibraryText.get('1.0','end').strip(),
-              mz_window = float(mzWindowText.get('1.0','end').strip()))
+              mz_window = float(mzWindowText.get('1.0','end').strip()),
+              peak_width = float(peakWidthText.get('1.0','end').strip()),
+              n_isotopes = int(numberIsotopesText.get('1.0','end').strip()))
+
         feature_to_json(feature_path, os.path.join(project_dir, 'data'))
         os.remove(feature_path)
+    print('SUCCESS: features extracted')
 
 def feature_to_json(feature_path, json_dir):
     feature_map = FeatureMap()
@@ -134,9 +139,9 @@ mzWindowText.insert('end','0.4')
 peakWidthText = Text()
 peakWidthText.place(x = 800, y = 150, height = 25, width = 60)
 peakWidthText.insert('end','60')
-peakWidthText = Text()
-peakWidthText.place(x = 800, y = 200, height = 25, width = 60)
-peakWidthText.insert('end','2')
+numberIsotopesText = Text()
+numberIsotopesText.place(x = 800, y = 200, height = 25, width = 60)
+numberIsotopesText.insert('end','2')
 
 openFilesButton = Button(text='Open mzML Files', command=open_mzML)
 openFilesButton.place(x = 10, y = 270)
