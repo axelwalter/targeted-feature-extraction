@@ -4,6 +4,7 @@ import os
 import json
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 def ffmid(mzML, featureXML, library, n_isotopes = 2, mz_window = 10, peak_width = 60):
     args = ["FeatureFinderMetaboIdent","-in",mzML,"-out",featureXML,"-id",library,
@@ -67,15 +68,14 @@ def maximum_absolute_scaling(df):
     # copy the dataframe
     df_scaled = df.copy()
     # apply maximum absolute scaling
-    for column in df_scaled.columns[1:]:
+    for column in df_scaled.columns:
         column_values = pd.to_numeric(df_scaled[column])
-        df_scaled[column] = column_values  / column_values.abs().max()
+        df_scaled[column] = round(column_values  / column_values.abs().max(),2)
     return df_scaled
 
-def result_to_df(result):
+def result_to_df(result, columns, index):
         df = pd.DataFrame(result)
+        df.columns = columns
+        df.index = index
         df = df.replace('NA', np.nan)
-        new_header = df.iloc[0]
-        df = df[1:]
-        df.columns = new_header
         return df

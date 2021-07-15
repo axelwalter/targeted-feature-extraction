@@ -1,9 +1,12 @@
 from tkinter import *
 from tkinter import filedialog as fd
-from matplotlib.colors import Normalize
+from numpy.core.numeric import indices
 import pandas as pd
 from src.extraction import maximum_absolute_scaling, result_to_df
 import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from src.ui.HeatMapWindow import HeatMapWindow
 
 class VisualizationWindow(Toplevel):
     def __init__(self, json_objects):
@@ -36,11 +39,14 @@ class VisualizationWindow(Toplevel):
         self.normalizeCheckButton = Checkbutton(self, text = "normalize values (-1 to 1)", variable = self.normalize)
         self.normalizeCheckButton.place(x = 10, y = 310)
 
-        self.tableButton = Button(self, text='Excel Table', command=self.generate_table)
+        self.tableButton = Button(self, text='Save as TSV', command=self.save_tsv)
         self.tableButton.place(x = 400, y = 270)
 
+        self.tableButton = Button(self, text='Excel Table', command=self.generate_table)
+        self.tableButton.place(x = 600, y = 270)
+
         self.heatmapButton = Button(self, text='Heatmap', command=self.generate_heatmap)
-        self.heatmapButton.place(x = 600, y = 270)
+        self.heatmapButton.place(x = 600, y = 310)
 
     def populate_samples_compounds(self):
         if not self.json_objects:
@@ -75,30 +81,40 @@ class VisualizationWindow(Toplevel):
     
     def generate_table(self):
         df = self.calculate_df()
-        excel_path = fd.askopenfilename(filetypes=[('excel files', '*.xlsx')], parent=self)
+        excel_path = fd.asksaveasfilename(filetypes=[('excel files', '*.xlsx')], parent=self)
         if excel_path:
             df.to_excel(excel_path, index=False)
     
     def generate_heatmap(self):
+        visualization_window = HeatMapWindow(df=self.calculate_df())
+        visualization_window.mainloop()
+
+    def save_tsv(self):
         df = self.calculate_df()
+        tsv_path = fd.asksaveasfilename(filetypes=[('tab separated value', '*.tsv')], parent=self)
+        if tsv_path:
+            df.to_csv(tsv_path, sep='\t', index=True)
 
     def calculate_df(self):
         current_data = self.get_current_data()
         option = self.calc_option.get()
-        result = [['samples']+[compound[1] for compound in current_data['compounds']]]
+        result = []
+        columns = [compound[1] for compound in current_data['compounds']]
+        indices = []
         if option == 'absolute values':
-            for file_name, custom_name in current_data['sample names']:
+            for file_name, custom_name in current_data['samples']:
                 data = next((json_object for json_object in self.json_objects if json_object['file']['name'] == file_name), None)
                 if data:
-                    result.append([custom_name]+[str(data['auc'].get(compound[0],'NA')) for compound in current_data['compounds']]) 
-        else:
+                    result.append([data['auc'].get(compound[0],'NA') for compound in current_data['compounds']]) 
+                    indices.append(custom_name)
+        else:   
             first_sample_data = next((json_object for json_object in self.json_objects if json_object['file']['name'] == current_data['samples'][0][0]), None)
             if first_sample_data:
                 first_sample_aucs = [first_sample_data['auc'].get(compound[0],'NA') for compound in current_data['compounds']]
-                for file_name, custom_name in current_data['sample names'][1:]:
+                for file_name, custom_name in current_data['samples'][1:]:
                     data = next((json_object for json_object in self.json_objects if json_object['file']['name'] == file_name), None)
                     if data:
-                        tmp_result = [custom_name]
+                        tmp_result = []
                         sample_aucs = [data['auc'].get(compound[0],'NA') for compound in current_data['compounds']]
                         for reference, value in zip(first_sample_aucs, sample_aucs):
                             if isinstance(reference, int) and isinstance(value, int):
@@ -106,12 +122,13 @@ class VisualizationWindow(Toplevel):
                                     tmp_result.append(round(value/reference*100,1))
                                 elif option == 'relative to first sample (absolute values)':
                                     tmp_result.append(value-reference)
-                            else: 
+                            else:
                                 tmp_result.append('NA')
+                        indices.append(custom_name)
                     result.append(tmp_result)
-        df = result_to_df(result)
+        df = result_to_df(result, columns=columns, index=indices)
         if self.normalize.get():
             df = maximum_absolute_scaling(df)
         print('\n'+option+', normalize: '+str(self.normalize.get()))
-        print(df.to_string(index=False))
+        print(df.to_string())
         return df
