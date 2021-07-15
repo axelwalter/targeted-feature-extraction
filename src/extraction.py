@@ -3,6 +3,7 @@ from pyopenms import *
 import os
 import json
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def ffmid(mzML, featureXML, library, n_isotopes = 2, mz_window = 10, peak_width = 60):
     args = ["FeatureFinderMetaboIdent","-in",mzML,"-out",featureXML,"-id",library,
@@ -61,3 +62,20 @@ def get_json_objects(project_dir):
             with open(os.path.join(json_dir, file),'r') as f:
                 json_objects.append(json.load(f))
         return json_objects
+
+def maximum_absolute_scaling(df):
+    # copy the dataframe
+    df_scaled = df.copy()
+    # apply maximum absolute scaling
+    for column in df_scaled.columns[1:]:
+        column_values = pd.to_numeric(df_scaled[column])
+        df_scaled[column] = column_values  / column_values.abs().max()
+    return df_scaled
+
+def result_to_df(result):
+        df = pd.DataFrame(result)
+        df = df.replace('NA', np.nan)
+        new_header = df.iloc[0]
+        df = df[1:]
+        df.columns = new_header
+        return df
