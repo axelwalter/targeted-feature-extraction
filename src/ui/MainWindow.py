@@ -11,7 +11,7 @@ class MainWindow(Tk):
         self.title('Targeted Feature Extraction')
         self.geometry('970x350')
         self.mzml_files = []
-        self.project_dir = ''
+        self.project_dir = '/home/axel/dev/targeted-feature-extraction/project'
         self.mzMLFilesLabel = Label(text='mzML files')
         self.mzMLFilesLabel.place(x = 10, y = 2)
         self.mzMLFilesText = Text()

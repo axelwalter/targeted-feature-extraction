@@ -7,6 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from src.ui.HeatMapWindow import HeatMapWindow
+from src.ui.BarPlotWindow import BarPlotWindow
 
 class VisualizationWindow(Toplevel):
     def __init__(self, json_objects):
@@ -48,6 +49,9 @@ class VisualizationWindow(Toplevel):
         self.heatmapButton = Button(self, text='Heatmap', command=self.generate_heatmap)
         self.heatmapButton.place(x = 600, y = 310)
 
+        self.tableButton = Button(self, text='Bar Plot', command=self.generate_barplot)
+        self.tableButton.place(x = 800, y = 270)
+
     def populate_samples_compounds(self):
         if not self.json_objects:
             print('There are no JSON files in your project directory! Forgot to select the project directory?')
@@ -87,6 +91,10 @@ class VisualizationWindow(Toplevel):
     
     def generate_heatmap(self):
         visualization_window = HeatMapWindow(df=self.calculate_df())
+        visualization_window.mainloop()
+
+    def generate_barplot(self):
+        visualization_window = BarPlotWindow(df=self.calculate_df())
         visualization_window.mainloop()
 
     def save_tsv(self):

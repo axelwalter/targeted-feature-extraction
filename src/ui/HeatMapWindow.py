@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter import filedialog as fd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib import cm
 
 class HeatMapWindow(Toplevel):
     def __init__(self, df):
@@ -74,7 +73,7 @@ class HeatMapWindow(Toplevel):
         plt.show()
     
     def generate_heatmap(self):
-        heat = sns.heatmap(self.df, cmap=cm.bwr, annot=self.annotate.get(), square=True)
+        heat = sns.heatmap(self.df, cmap=self.cmapText.get('1.0','end').strip(), annot=self.annotate.get(), square=True)
         heat.set_xticklabels(heat.get_xticklabels(), rotation = int(self.xrotText.get('1.0','end').strip()), fontsize=int(self.fontSizeText.get('1.0','end').strip()))
         heat.set_yticklabels(heat.get_yticklabels(), rotation = int(self.yrotText.get('1.0','end').strip()), fontsize=int(self.fontSizeText.get('1.0','end').strip()))
         return heat
