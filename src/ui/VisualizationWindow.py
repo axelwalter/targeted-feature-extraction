@@ -1,11 +1,6 @@
 from tkinter import *
 from tkinter import filedialog as fd
-from numpy.core.numeric import indices
-import pandas as pd
 from src.extraction import maximum_absolute_scaling, result_to_df
-import seaborn as sns
-import matplotlib.pyplot as plt
-from matplotlib import cm
 from src.ui.HeatMapWindow import HeatMapWindow
 from src.ui.BarPlotWindow import BarPlotWindow
 
@@ -40,17 +35,14 @@ class VisualizationWindow(Toplevel):
         self.normalizeCheckButton = Checkbutton(self, text = "normalize values (-1 to 1)", variable = self.normalize)
         self.normalizeCheckButton.place(x = 10, y = 310)
 
-        self.tableButton = Button(self, text='Save as TSV', command=self.save_tsv)
-        self.tableButton.place(x = 400, y = 270)
-
-        self.tableButton = Button(self, text='Excel Table', command=self.generate_table)
-        self.tableButton.place(x = 600, y = 270)
+        self.tableButton = Button(self, text='Export Table', command=self.generate_table)
+        self.tableButton.place(x = 300, y = 270)
 
         self.heatmapButton = Button(self, text='Heatmap', command=self.generate_heatmap)
-        self.heatmapButton.place(x = 600, y = 310)
+        self.heatmapButton.place(x = 450, y = 270)
 
         self.tableButton = Button(self, text='Bar Plot', command=self.generate_barplot)
-        self.tableButton.place(x = 800, y = 270)
+        self.tableButton.place(x = 600, y = 270)
 
     def populate_samples_compounds(self):
         if not self.json_objects:
@@ -85,9 +77,11 @@ class VisualizationWindow(Toplevel):
     
     def generate_table(self):
         df = self.calculate_df()
-        excel_path = fd.asksaveasfilename(filetypes=[('excel files', '*.xlsx')], parent=self)
-        if excel_path:
-            df.to_excel(excel_path, index=False)
+        file_path = fd.asksaveasfilename(filetypes=[('excel files', '*.xlsx'), ('tab separated value', '*.tsv')], parent=self)
+        if file_path.endswith('.xlsx'):
+            df.to_excel(file_path, index=False)
+        elif file_path.endswith('.tsv'):
+            df.to_csv(file_path, sep='\t', index=True)
     
     def generate_heatmap(self):
         visualization_window = HeatMapWindow(df=self.calculate_df())
@@ -96,12 +90,6 @@ class VisualizationWindow(Toplevel):
     def generate_barplot(self):
         visualization_window = BarPlotWindow(df=self.calculate_df())
         visualization_window.mainloop()
-
-    def save_tsv(self):
-        df = self.calculate_df()
-        tsv_path = fd.asksaveasfilename(filetypes=[('tab separated value', '*.tsv')], parent=self)
-        if tsv_path:
-            df.to_csv(tsv_path, sep='\t', index=True)
 
     def calculate_df(self):
         current_data = self.get_current_data()

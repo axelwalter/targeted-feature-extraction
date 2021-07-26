@@ -24,16 +24,22 @@ class MainWindow(Tk):
         self.targetLibraryText.config(state='disabled')
         self.targetLibraryText.place(x = 10, y = 230, height = 25, width = 780)
 
-        self.parameterLabel = Label(text='Parameters\n\nm/z extraction window\nppm (> 1) or Da (< 1)\n\n\nrt window (sec)\n\n\nnumber of isotopes')
-        self.parameterLabel.place(x = 800, y = 25)
+        self.label = Label(text='Parameters')
+        self.label.place(x = 800, y = 2)
+        self.label = Label(text='m/z extraction window\nppm (> 1) or Da (< 1)')
+        self.label.place(x = 800, y = 30)
         self.mzWindowText = Text()
-        self.mzWindowText.place(x = 800, y = 100, height = 25, width = 60)
+        self.mzWindowText.place(x = 800, y = 70, height = 25, width = 60)
         self.mzWindowText.insert('end','0.4')
+        self.label = Label(text='rt window (sec)')
+        self.label.place(x = 800, y = 100)
         self.peakWidthText = Text()
-        self.peakWidthText.place(x = 800, y = 150, height = 25, width = 60)
+        self.peakWidthText.place(x = 800, y = 120, height = 25, width = 60)
         self.peakWidthText.insert('end','60')
+        self.label = Label(text='number of isotopes')
+        self.label.place(x = 800, y = 150)
         self.numberIsotopesText = Text()
-        self.numberIsotopesText.place(x = 800, y = 200, height = 25, width = 60)
+        self.numberIsotopesText.place(x = 800, y = 170, height = 25, width = 60)
         self.numberIsotopesText.insert('end','2')
 
         self.openFilesButton = Button(text='Open mzML Files', command=self.open_mzML)
@@ -46,16 +52,16 @@ class MainWindow(Tk):
         self.selectProjectButton.place(x = 180, y = 270)
 
         self.openTargetLibraryButton = Button(text='Open Target Library', command=self.open_target_library)
-        self.openTargetLibraryButton.place(x = 390, y = 270)
+        self.openTargetLibraryButton.place(x = 570, y = 270)
 
-        self.extractButton = Button(text='Targeted Feature Extraction', command=self.extract_features)
-        self.extractButton.place(x = 570, y = 270)
-
-        self.extractButton = Button(text='Data Visualization', command=self.data_visualization)
+        self.extractButton = Button(text='Extract Features', command=self.extract_features)
         self.extractButton.place(x = 570, y = 310)
 
+        self.extractButton = Button(text='Data Visualization', command=self.data_visualization)
+        self.extractButton.place(x = 390, y = 310)
+
         self.viewButton = Button(text='View Features', command=self.view_features)
-        self.viewButton.place(x = 805, y = 270)
+        self.viewButton.place(x = 390, y = 270)
 
     def open_mzML(self):
         filenames = fd.askopenfilenames(filetypes=[('mzML Files', '*.mzML')])
