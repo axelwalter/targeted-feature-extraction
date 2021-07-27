@@ -7,7 +7,7 @@ class BarPlotWindow(Toplevel):
         super().__init__()
         self.df = df
 
-        self.title('Heatmap')
+        self.title('Bar Plot')
         self.geometry('300x270')
         self.titleLabel = Label(self, text='title')
         self.titleLabel.place(x = 10, y = 2)
