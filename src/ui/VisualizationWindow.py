@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import filedialog as fd
 from src.extraction import maximum_absolute_scaling, result_to_df
-from src.ui.HeatMapWindow import HeatMapWindow
-from src.ui.BarPlotWindow import BarPlotWindow
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 class VisualizationWindow(Toplevel):
     def __init__(self, json_objects):
@@ -10,7 +10,7 @@ class VisualizationWindow(Toplevel):
         self.json_objects = json_objects
 
         self.title('Data Visualization (AUC)')
-        self.geometry('970x350')
+        self.geometry('970x530')
         self.samplesLabel = Label(self, text='samples')
         self.samplesLabel.place(x = 10, y = 2)
         self.samplesText = Text(self)
@@ -19,7 +19,7 @@ class VisualizationWindow(Toplevel):
         self.compoundsLabel = Label(self, text='compounds')
         self.compoundsLabel.place(x = 620, y = 2)
         self.compoundsText = Text(self)
-        self.compoundsText.place(x = 620, y = 20, height = 230, width = 400)
+        self.compoundsText.place(x = 620, y = 20, height = 230, width = 340)
 
         self.populate_samples_compounds()
         
@@ -36,13 +36,58 @@ class VisualizationWindow(Toplevel):
         self.normalizeCheckButton.place(x = 10, y = 310)
 
         self.tableButton = Button(self, text='Export Table', command=self.generate_table)
-        self.tableButton.place(x = 300, y = 270)
+        self.tableButton.place(x = 500, y = 410+40)
 
         self.heatmapButton = Button(self, text='Heatmap', command=self.generate_heatmap)
-        self.heatmapButton.place(x = 450, y = 270)
+        self.heatmapButton.place(x = 500, y = 270+40)
 
         self.tableButton = Button(self, text='Bar Plot', command=self.generate_barplot)
-        self.tableButton.place(x = 600, y = 270)
+        self.tableButton.place(x = 500, y = 340+40)
+
+        self.titleLabel = Label(self, text='title')
+        self.titleLabel.place(x = 10+650, y = 2+270)
+        self.titleText = Text(self)
+        self.titleText.place(x = 10+650, y = 20+270, height = 25, width = 280)
+
+        self.cmapLabel = Label(self, text='color map')
+        self.cmapLabel.place(x = 10+650, y = 50+270)
+        self.cmapText = Text(self)
+        self.cmapText.place(x = 10+650, y = 68+270, height = 25, width = 200)
+        self.cmapText.insert('end','bwr')
+
+        self.xrotLabel = Label(self, text='x label rotation')
+        self.xrotLabel.place(x = 10+650, y = 100+270)
+        self.xrotText = Text(self)
+        self.xrotText.place(x = 10+650, y = 118+270, height = 25, width = 50)
+        self.xrotText.insert('end','30')
+
+        self.yrotLabel = Label(self, text='y label rotation')
+        self.yrotLabel.place(x = 100+700, y = 100+270)
+        self.yrotText = Text(self)
+        self.yrotText.place(x = 100+700, y = 118+270, height = 25, width = 50)
+        self.yrotText.insert('end','360')
+
+        self.dpiLabel = Label(self, text='image quality (dpi)')
+        self.dpiLabel.place(x = 10+650, y = 150+270)
+        self.dpiText = Text(self)
+        self.dpiText.place(x = 10+650, y = 168+270, height = 25, width = 50)
+        self.dpiText.insert('end','300')
+
+        self.fontSizeLabel = Label(self, text='font size')
+        self.fontSizeLabel.place(x = 100+700, y = 150+270)
+        self.fontSizeText = Text(self)
+        self.fontSizeText.place(x = 100+700, y = 168+270, height = 25, width = 50)
+        self.fontSizeText.insert('end','8') 
+
+        self.annotate = BooleanVar()
+        self.annotate.set(False)
+        self.annotateCheckButton = Checkbutton(self, text = "annotate values", variable = self.annotate)
+        self.annotateCheckButton.place(x =10+650, y = 200+270)
+
+        self.save = BooleanVar()
+        self.save.set(False)
+        self.saveCheckButton = Checkbutton(self, text = "save image", variable = self.save)
+        self.saveCheckButton.place(x =10+650, y = 230+270)
 
     def populate_samples_compounds(self):
         if not self.json_objects:
@@ -84,12 +129,31 @@ class VisualizationWindow(Toplevel):
             df.to_csv(file_path, sep='\t', index=True)
     
     def generate_heatmap(self):
-        visualization_window = HeatMapWindow(df=self.calculate_df())
-        visualization_window.mainloop()
+        plt.rcParams.update({'font.size': int(self.fontSizeText.get('1.0','end').strip())})
+        heat = sns.heatmap(self.calculate_df(), cmap=self.cmapText.get('1.0','end').strip(), annot=self.annotate.get(), square=True)
+        heat.set_xticklabels(heat.get_xticklabels(), rotation = int(self.xrotText.get('1.0','end').strip()), fontsize=int(self.fontSizeText.get('1.0','end').strip()))
+        heat.set_yticklabels(heat.get_yticklabels(), rotation = int(self.yrotText.get('1.0','end').strip()), fontsize=int(self.fontSizeText.get('1.0','end').strip()))
+        plt.tight_layout()
+        if self.save.get():
+            img_path = fd.asksaveasfilename(filetypes=[('PNG', ['*.png']),('TIF', ['*.tif','*.tiff'])], parent=self)
+            if img_path:
+                plt.savefig(img_path, format = img_path.split('.')[-1], dpi=int(self.dpiText.get('1.0','end').strip()))
+                print('SUCCESS: saved heatmap in image file: '+img_path)
+        else:
+            plt.show()
 
     def generate_barplot(self):
-        visualization_window = BarPlotWindow(df=self.calculate_df())
-        visualization_window.mainloop()
+        plt.rcParams.update({'font.size': int(self.fontSizeText.get('1.0','end').strip())})
+        bar = self.calculate_df().plot.bar(title=self.titleText.get('1.0','end'), rot=int(self.xrotText.get('1.0','end').strip()), ylabel='intensity AUC')
+        plt.ticklabel_format(axis='y', scilimits=(0,0), style='sci', useMathText=True)
+        plt.tight_layout()
+        if self.save.get():
+            img_path = fd.asksaveasfilename(filetypes=[('PNG', ['*.png']),('TIF', ['*.tif','*.tiff'])], parent=self)
+            if img_path:
+                plt.savefig(img_path, format = img_path.split('.')[-1], dpi=int(self.dpiText.get('1.0','end').strip()))
+                print('SUCCESS: saved bar plot in image file: '+img_path)
+        else:
+            plt.show()
 
     def calculate_df(self):
         current_data = self.get_current_data()
